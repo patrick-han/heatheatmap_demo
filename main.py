@@ -9,16 +9,14 @@ def scene_callback(msg):
     print("scene_callback: ", msg)
 
 def button_callback(event):
-    global button_cube
-    global button_color
+    global map_cube
+    global map_cube_color
     if event.event_type == arena.EventType.mousedown:
         print("Source: ", event.object_id)
-        if button_color == "red":
-            button_cube.update(color = (0,255,0))
-            button_color = "green"
-        elif button_color == "green":
-            button_cube.update(color = (255,0,0))
-            button_color = "red"
+        if (event.object_id == "button_cube_heat"):
+            map_cube.update(color = (255,0,0))
+        elif (event.object_id == "button_cube_humid"):
+            map_cube.update(color = (0,255,0))
 
 arena.init("arena.andrew.cmu.edu", "realm", "patrick_scene")#, scene_callback)
 
@@ -54,14 +52,32 @@ def start_serial(temperature_text_obj, humidity_text_obj, humidity_cube_obj):
 
     ser.close()
 
-button_color = "red"
-button_cube = arena.Object(
-        objName = "button_cube",
+
+
+button_cube_heat = arena.Object(
+        objName = "button_cube_heat",
+        objType = arena.Shape.cube,
+        location= (6,0,8),
+        clickable= True,
+        callback = button_callback,
+        color = (0,0,0)
+)
+
+button_cube_humid = arena.Object(
+        objName = "button_cube_humid",
+        objType = arena.Shape.cube,
+        location= (6,0,10),
+        clickable= True,
+        callback = button_callback,
+        color = (255, 255, 255)
+)
+map_cube_color = "red"
+map_cube = arena.Object(
+        objName = "map_cube",
         objType = arena.Shape.cube,
         location= (6,0,6),
         clickable= True,
-        callback = button_callback,
-        color = (255,0,0)
+        color = (255, 0, 0)
 )
 
 arena.handle_events()
