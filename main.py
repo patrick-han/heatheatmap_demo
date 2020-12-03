@@ -8,17 +8,22 @@ from sense import SensorInput
 def scene_callback(msg):
     print("scene_callback: ", msg)
 
+arena.init("arena.andrew.cmu.edu", "realm", "patrick_scene")#, scene_callback)
+
 def button_callback(event):
-    global map_cube
-    global map_cube_color
     if event.event_type == arena.EventType.mousedown:
         print("Source: ", event.object_id)
-        if (event.object_id == "button_cube_heat"):
-            map_cube.update(color = (255,0,0))
-        elif (event.object_id == "button_cube_humid"):
-            map_cube.update(color = (0,255,0))
+        if (event.object_id == "button_cube_temperature"):
+            for map_cube in heatmap_cube_list:
+                map_cube.update(color=(255, 0, 0))
+        elif (event.object_id == "button_cube_humidity"):
+            for map_cube in heatmap_cube_list:
+                map_cube.update(color=(0, 255, 0))
+        elif (event.object_id == "button_cube_wireless"):
+            for map_cube in heatmap_cube_list:
+                map_cube.update(color=(0, 0, 255))
 
-arena.init("arena.andrew.cmu.edu", "realm", "patrick_scene")#, scene_callback)
+
 
 # start_serial(temperature_text, humidity_text, humidity_cube)
 
@@ -53,9 +58,9 @@ def start_serial(temperature_text_obj, humidity_text_obj, humidity_cube_obj):
     ser.close()
 
 
-
-button_cube_heat = arena.Object(
-        objName = "button_cube_heat",
+# Buttons for temperature, humidity, and wireless signal strength
+button_cube_temperature = arena.Object(
+        objName = "button_cube_temperature",
         objType = arena.Shape.cube,
         location= (6,0,8),
         clickable= True,
@@ -63,21 +68,41 @@ button_cube_heat = arena.Object(
         color = (0,0,0)
 )
 
-button_cube_humid = arena.Object(
-        objName = "button_cube_humid",
+button_cube_humidity = arena.Object(
+        objName = "button_cube_humidity",
         objType = arena.Shape.cube,
         location= (6,0,10),
         clickable= True,
         callback = button_callback,
         color = (255, 255, 255)
 )
-map_cube_color = "red"
-map_cube = arena.Object(
-        objName = "map_cube",
+
+button_cube_wireless= arena.Object(
+        objName = "button_cube_wireless",
+        objType = arena.Shape.cube,
+        location= (6,0,12),
+        clickable= True,
+        callback = button_callback,
+        color = (155, 155, 155)
+)
+
+
+# Heat map cubes, default color is red for now
+default_map_cube_color = (255, 0 ,0)
+heatmap_cube1 = arena.Object(
+        objName = "map_cube1",
         objType = arena.Shape.cube,
         location= (6,0,6),
         clickable= True,
-        color = (255, 0, 0)
+        color = default_map_cube_color
 )
+heatmap_cube2 = arena.Object(
+        objName = "map_cube2",
+        objType = arena.Shape.cube,
+        location= (6,2,6),
+        clickable= True,
+        color = default_map_cube_color
+)
+heatmap_cube_list = [heatmap_cube1, heatmap_cube2]
 
 arena.handle_events()
