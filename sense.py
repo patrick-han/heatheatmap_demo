@@ -15,3 +15,4 @@ class SensorInput:
         self.type = _type
         self.value = _value
         self.location = _location
+
