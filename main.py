@@ -4,7 +4,7 @@ import json
 import random
 import arena
 from threading import Thread
-from sense import SensorInput
+from sense import distance_3d
 
 
 # Global for keeping track of which sensor to display data from
@@ -26,6 +26,7 @@ Should mutate the cubes based on the sensor reading
 def start_serial():
     global sensor_to_read
     global reading_text
+    global fan_obj
 
     # set up the serial line
     ser = serial.Serial('COM6', 9600)
@@ -44,6 +45,7 @@ def start_serial():
                     # Map to opacity range based on estimated input range
                     output = map_to_range(temperature_val, 28.5, 31.0, 0.0, 1.0)
                     for map_cube in first_floor_heatmap_cube_list:  # Update all cube maps
+                        # print(fan_obj.location)
                         # Add some uniform noise to simulate other sensors
                         output += random.uniform(-0.01, 0.01)
                         output = max(min(output, 1.0), 0.0)  # Clamp values for opacity
@@ -95,8 +97,8 @@ fan_obj = arena.Object(
         objName = "fan",
         url="store/users/patrickhan/m202a/fan.glb",
         objType=arena.Shape.gltf_model,
-        scale=(0.5,0.5,0.5),
-        location=(8,2,8),
+        scale=(0.3,0.3,0.3),
+        location=(-3.4,2.4,-8.5),
         clickable=True,
         data='{"animation": { "property": "rotation", "to": "0 360 0", "loop": false, "dur": 0}}',
 )
@@ -104,11 +106,11 @@ fan_obj = arena.Object(
 button_fan = arena.Object(
         objName = "button_fan",
         objType = arena.Shape.cube,
-        location= (8,.5,8),
-        scale = (0.5,0.5,0.5),
+        scale=(0.3,0.5,0.3),
+        location=(-5,2,-10),
         clickable= True,
         callback=fan_button_callback,
-        color = (0,0,0)
+        color = (255,0, 255)
 )
 
 '''
