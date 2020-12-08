@@ -83,6 +83,23 @@ arena.init("arena.andrew.cmu.edu", "realm", "patrick_scene")#, scene_callback)
 
 
 '''
+Stove
+'''
+
+stove_obj = arena.Object(
+        objName = "stove",
+        url="store/users/patrickhan/m202a/stove.glb",
+        objType=arena.Shape.gltf_model,
+        scale=(0.45,0.45,0.45),
+        location=(-10.7,.33,-10.0),
+        rotation=(0, 0.7071068, 0, 0.7071068), # Quaternions
+        clickable=True,
+)
+
+
+
+
+'''
 Turns the fan on and off
 '''
 fan_status = False
