@@ -82,9 +82,25 @@ def scene_callback(msg):
 arena.init("arena.andrew.cmu.edu", "realm", "patrick_scene")#, scene_callback)
 
 
+
 '''
 Stove
 '''
+
+'''
+Turns the stove on and off
+'''
+stove_status = False
+def stove_button_callback(event):
+    global stove_light
+    global stove_status
+    if event.event_type == arena.EventType.mousedown:
+        if stove_status:
+            stove_status = False
+            stove_light.update(color = (0 ,0, 0))
+        else:
+            stove_status = True
+            stove_light.update(color = (100 ,0, 0))
 
 stove_obj = arena.Object(
         objName = "stove",
@@ -93,9 +109,28 @@ stove_obj = arena.Object(
         scale=(0.45,0.45,0.45),
         location=(-10.7,.33,-10.0),
         rotation=(0, 0.7071068, 0, 0.7071068), # Quaternions
+        callback=stove_button_callback,
         clickable=True,
 )
 
+stove_cube = arena.Object(
+        objName = "cube_stove",
+        objType = arena.Shape.cube,
+        location= (-10.7,2,-10.0),
+        clickable= True,
+        scale = (0.8,0.8,0.8),
+        color = (255,0,255),
+        data='{"material": {"opacity": 0.5}}'
+)
+
+stove_light = arena.Object(
+        objName = "light_stove",
+        objType = arena.Shape.light,
+        location= (-10.7,2,-10.0),
+        scale = (0.8,0.8,0.8),
+        color = (0 ,0, 0),
+        data='{"light": {"type": "point"}}'
+)
 
 
 
@@ -168,7 +203,7 @@ reading_text = arena.Object(
         location= (-1.3,3.2,-7.4),
         rotation=(0, 0.7071068, 0, -0.7071068), # Quaternions
         text = "Hello World!"
-    )
+)
 
 
 # Buttons for temperature, humidity, and wireless signal strength
