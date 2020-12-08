@@ -1,5 +1,6 @@
 import serial
 import time
+import json
 import arena
 from threading import Thread
 from sense import SensorInput
@@ -7,11 +8,20 @@ from sense import SensorInput
 
 # Global for keeping track of which sensor to display data from
 sensor_to_read = "temperature"
+# Heat map cubes, default color is green for now, green for humidity
+default_map_cube_color = (255, 0, 0)
+
+'''
+Maps a value from one range to another
+'''
+def map_to_range(value, from_start, from_end, to_start, to_end):
+    slope = (to_end - to_start) / (from_end - from_start)
+    output = to_start + slope * (value - from_start)
+    return output
 
 '''
 Should mutate the cubes based on the sensor reading
 '''
-
 def start_serial():
     global sensor_to_read
     global reading_text
@@ -20,28 +30,35 @@ def start_serial():
     ser = serial.Serial('COM6', 9600)
     time.sleep(2)
 
-    while (True):
+    while True:
         b = ser.readline()
         string_n = b.decode()
         string = string_n.rstrip()
-        if (string):
-            # if (string[0] == "T"):
-            if (sensor_to_read == "temperature"):
-                reading_text.update(text = "The temperature is: " + string)
-            # elif (string[0] == "H"):
-            elif (sensor_to_read == "humidity"):
-                reading_text.update(text = "The humidity is: " + string)
-                humidity_val = float(string.split()[2])
 
-                # output_start = 1
-                # output_end = 5
-                # input_start = 33
-                # input_end = 50
-                # slope = (output_end - output_start) / (input_end - input_start)
-                # output = output_start + slope * (humidity_val - input_start)
-                #
-                # humidity_cube_obj.update(scale = (0.2, output, 0.2))
-            print(string)
+        if string: # We don't care about blank lines
+            if sensor_to_read == "temperature": # Only check for temperature if we've selected it
+                if string[0] == "T":
+                    reading_text.update(text = string)
+                    temperature_val = float(string.split()[2])
+                    print(temperature_val)
+                    # Map to opacity range based on estimated input range
+                    output = map_to_range(temperature_val, 28.5, 31.0, 0.0, 1.0)
+                    output = max(min(output, 1.0), 0.0)  # Clamp values for opacity
+                    data_str = json.dumps({"material": {"opacity": output}})
+                    for map_cube in first_floor_heatmap_cube_list:  # Update all cube maps
+                        map_cube.update(data=data_str)
+
+
+            elif sensor_to_read == "humidity":
+                if string[0] == "H":
+                    reading_text.update(text = string)
+                    humidity_val = float(string.split()[2])
+                    # Map to opacity range based on estimated input range
+                    output = map_to_range(humidity_val, 20.0, 50.0, 0.0, 1.0)
+                    output = max(min(output, 1.0), 0.0) # Clamp values for opacity
+                    data_str = json.dumps({"material": {"opacity": output}})
+                    for map_cube in first_floor_heatmap_cube_list: # Update all cube maps
+                        map_cube.update(data=data_str)
 
         time.sleep(0.1)
 
@@ -62,15 +79,15 @@ def button_callback(event):
     global sensor_to_read
     if event.event_type == arena.EventType.mousedown:
         print("Source: ", event.object_id)
-        if (event.object_id == "button_cube_temperature"):
+        if event.object_id == "button_cube_temperature":
             sensor_to_read = "temperature"
             for map_cube in first_floor_heatmap_cube_list:
                 map_cube.update(color=(255, 0, 0))
-        elif (event.object_id == "button_cube_humidity"):
+        elif event.object_id == "button_cube_humidity":
             sensor_to_read = "humidity"
             for map_cube in first_floor_heatmap_cube_list:
                 map_cube.update(color=(0, 255, 0))
-        elif (event.object_id == "button_cube_wireless"):
+        elif event.object_id == "button_cube_wireless":
             for map_cube in first_floor_heatmap_cube_list:
                 map_cube.update(color=(0, 0, 255))
 
@@ -119,8 +136,7 @@ button_cube_wireless= arena.Object(
 )
 
 
-# Heat map cubes, default color is red for now, red for temperature
-default_map_cube_color = (255, 0 ,0)
+
 
 # Only for the first floor
 heatmap_cube_pos_list = [(-7,2,-2.5), (-5,2,-2.5), (-3,2,-2.5), # Missing (-9,2,-2.5) since it blocks the doorway
@@ -137,10 +153,10 @@ for i, pos in enumerate(heatmap_cube_pos_list):
                 location= pos,
                 clickable= True,
                 color = default_map_cube_color,
-                data='{"material": {"opacity": 0.2}}'
+                data='{"material": {"opacity": 0.5}}'
         ))
 
-
+print('hello')
 thread = Thread(target = start_serial)
 
 # start_serial() # Contains while loop so it goes here at the end
