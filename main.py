@@ -26,7 +26,10 @@ Should mutate the cubes based on the sensor reading
 def start_serial():
     global sensor_to_read
     global reading_text
+
+    # For fan control affecting the output
     global fan_obj
+    global fan_status
 
     # set up the serial line
     ser = serial.Serial('COM6', 9600)
@@ -45,13 +48,15 @@ def start_serial():
                     # Map to opacity range based on estimated input range
                     output = map_to_range(temperature_val, 28.5, 31.0, 0.0, 1.0)
                     for map_cube in first_floor_heatmap_cube_list:  # Update all cube maps
-                        # print(fan_obj.location)
                         # Add some uniform noise to simulate other sensors
                         output += random.uniform(-0.01, 0.01)
+                        # If close enough to the fan, and if the fan is on, minus some number
+                        if distance_3d(fan_obj.location, map_cube.location) < 4.0 and fan_status:
+                            output -= 0.1
+
                         output = max(min(output, 1.0), 0.0)  # Clamp values for opacity
                         data_str = json.dumps({"material": {"opacity": output}})
                         map_cube.update(data=data_str)
-
 
             elif sensor_to_read == "humidity":
                 if string[0] == "H":
@@ -80,16 +85,16 @@ arena.init("arena.andrew.cmu.edu", "realm", "patrick_scene")#, scene_callback)
 '''
 Turns the fan on and off
 '''
-fan_status = "off"
+fan_status = False
 def fan_button_callback(event):
     global fan_obj
     global fan_status
     if event.event_type == arena.EventType.mousedown:
-        if fan_status == "on":
-            fan_status = "off"
+        if fan_status:
+            fan_status = False
             fan_obj.update(data='{"animation": { "property": "rotation", "to": "0 360 0", "loop": false, "dur": 0}}')
-        elif fan_status == "off":
-            fan_status = "on"
+        else:
+            fan_status = True
             fan_obj.update(data='{"animation": { "property": "rotation", "to": "0 360 0", "loop": true, "dur": 1000}}')
 
 
@@ -120,14 +125,17 @@ based on the corresponding virtual button pressed.
 '''
 def button_callback(event):
     global sensor_to_read
+    global reading_text
     if event.event_type == arena.EventType.mousedown:
         print("Source: ", event.object_id)
         if event.object_id == "button_cube_temperature":
             sensor_to_read = "temperature"
+            reading_text.update(color=(255, 0, 0))
             for map_cube in first_floor_heatmap_cube_list:
                 map_cube.update(color=(255, 0, 0))
         elif event.object_id == "button_cube_humidity":
             sensor_to_read = "humidity"
+            reading_text.update(color=(0, 255, 0))
             for map_cube in first_floor_heatmap_cube_list:
                 map_cube.update(color=(0, 255, 0))
         elif event.object_id == "button_cube_wireless":
@@ -139,8 +147,9 @@ def button_callback(event):
 reading_text = arena.Object(
         objName = "reading_text",
         objType = arena.Shape.text,
-        color = (255, 0, 0),
-        location = (-5, 2, 0),
+        color = default_map_cube_color,
+        location= (-1.3,3.2,-7.4),
+        rotation=(0, 0.7071068, 0, -0.7071068), # Quaternions
         text = "Hello World!"
     )
 
