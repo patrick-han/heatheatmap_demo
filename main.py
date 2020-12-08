@@ -1,6 +1,7 @@
 import serial
 import time
 import json
+import random
 import arena
 from threading import Thread
 from sense import SensorInput
@@ -40,12 +41,13 @@ def start_serial():
                 if string[0] == "T":
                     reading_text.update(text = string)
                     temperature_val = float(string.split()[2])
-                    print(temperature_val)
                     # Map to opacity range based on estimated input range
                     output = map_to_range(temperature_val, 28.5, 31.0, 0.0, 1.0)
-                    output = max(min(output, 1.0), 0.0)  # Clamp values for opacity
-                    data_str = json.dumps({"material": {"opacity": output}})
                     for map_cube in first_floor_heatmap_cube_list:  # Update all cube maps
+                        # Add some uniform noise to simulate other sensors
+                        output += random.uniform(-0.01, 0.01)
+                        output = max(min(output, 1.0), 0.0)  # Clamp values for opacity
+                        data_str = json.dumps({"material": {"opacity": output}})
                         map_cube.update(data=data_str)
 
 
@@ -55,9 +57,11 @@ def start_serial():
                     humidity_val = float(string.split()[2])
                     # Map to opacity range based on estimated input range
                     output = map_to_range(humidity_val, 20.0, 50.0, 0.0, 1.0)
-                    output = max(min(output, 1.0), 0.0) # Clamp values for opacity
-                    data_str = json.dumps({"material": {"opacity": output}})
                     for map_cube in first_floor_heatmap_cube_list: # Update all cube maps
+                        # Add some uniform noise to simulate other sensors
+                        output += random.uniform(-0.05, 0.05)
+                        output = max(min(output, 1.0), 0.0)  # Clamp values for opacity
+                        data_str = json.dumps({"material": {"opacity": output}})
                         map_cube.update(data=data_str)
 
         time.sleep(0.1)
@@ -156,10 +160,7 @@ for i, pos in enumerate(heatmap_cube_pos_list):
                 data='{"material": {"opacity": 0.5}}'
         ))
 
-print('hello')
 thread = Thread(target = start_serial)
-
-# start_serial() # Contains while loop so it goes here at the end
 thread.start()
 arena.handle_events()
 
