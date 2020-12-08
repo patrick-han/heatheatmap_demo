@@ -74,6 +74,43 @@ def scene_callback(msg):
 
 arena.init("arena.andrew.cmu.edu", "realm", "patrick_scene")#, scene_callback)
 
+
+'''
+Turns the fan on and off
+'''
+fan_status = "off"
+def fan_button_callback(event):
+    global fan_obj
+    global fan_status
+    if event.event_type == arena.EventType.mousedown:
+        if fan_status == "on":
+            fan_status = "off"
+            fan_obj.update(data='{"animation": { "property": "rotation", "to": "0 360 0", "loop": false, "dur": 0}}')
+        elif fan_status == "off":
+            fan_status = "on"
+            fan_obj.update(data='{"animation": { "property": "rotation", "to": "0 360 0", "loop": true, "dur": 1000}}')
+
+
+fan_obj = arena.Object(
+        objName = "fan",
+        url="store/users/patrickhan/m202a/fan.glb",
+        objType=arena.Shape.gltf_model,
+        scale=(0.5,0.5,0.5),
+        location=(8,2,8),
+        clickable=True,
+        data='{"animation": { "property": "rotation", "to": "0 360 0", "loop": false, "dur": 0}}',
+)
+
+button_fan = arena.Object(
+        objName = "button_fan",
+        objType = arena.Shape.cube,
+        location= (8,.5,8),
+        scale = (0.5,0.5,0.5),
+        clickable= True,
+        callback=fan_button_callback,
+        color = (0,0,0)
+)
+
 '''
 Updates the cube colors (Corresponding to temperature, humidity, wireless)
 and thereby the sensor data input source (TODO)
@@ -98,14 +135,12 @@ def button_callback(event):
 
 # For testing the number switching
 reading_text = arena.Object(
-        objName = "reading_",
+        objName = "reading_text",
         objType = arena.Shape.text,
         color = (255, 0, 0),
         location = (-5, 2, 0),
         text = "Hello World!"
     )
-
-
 
 
 # Buttons for temperature, humidity, and wireless signal strength
