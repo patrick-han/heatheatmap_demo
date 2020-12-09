@@ -46,7 +46,7 @@ def start_serial():
                     reading_text.update(text = string)
                     temperature_val = float(string.split()[2])
                     # Map to opacity range based on estimated input range
-                    output = map_to_range(temperature_val, 28.5, 31.0, 0.0, 1.0)
+                    output = map_to_range(temperature_val, 28.5, 31.0, 0.0, 0.90)
                     for map_cube in first_floor_heatmap_cube_list:  # Update all cube maps
                         # Add some uniform noise to simulate other sensors
                         output += random.uniform(-0.01, 0.01)
@@ -54,22 +54,48 @@ def start_serial():
                         if distance_3d(fan_obj.location, map_cube.location) < 4.0 and fan_status:
                             output -= 0.1
 
-                        output = max(min(output, 1.0), 0.0)  # Clamp values for opacity
+                        # Opacity (More Opaque = More hot)
+                        output = max(min(output, 1.0), 0.1)  # Clamp values for opacity
                         data_str = json.dumps({"material": {"opacity": output}})
                         map_cube.update(data=data_str)
+
+                        # Color (Red for Hot, Blue for Cold)
+                        r_value = output * 255
+                        b_value = 255 - r_value
+                        map_cube.update(color=(r_value, 0, b_value))
+
+                        # Size Update (Larger = Warmer)
+                        size_output = 1.0 + output
+                        size_output = max(min(size_output, 1.5), 1.0)
+                        map_cube.update(scale = (size_output,size_output,size_output))
 
             elif sensor_to_read == "humidity":
                 if string[0] == "H":
                     reading_text.update(text = string)
                     humidity_val = float(string.split()[2])
                     # Map to opacity range based on estimated input range
-                    output = map_to_range(humidity_val, 20.0, 50.0, 0.0, 1.0)
+                    output = map_to_range(humidity_val, 20.0, 50.0, 0.0, 0.9)
                     for map_cube in first_floor_heatmap_cube_list: # Update all cube maps
                         # Add some uniform noise to simulate other sensors
                         output += random.uniform(-0.05, 0.05)
-                        output = max(min(output, 1.0), 0.0)  # Clamp values for opacity
+                        # If close enough to the fan, and if the fan is on, minus some number
+                        if distance_3d(fan_obj.location, map_cube.location) < 4.0 and fan_status:
+                            output -= 0.1
+
+                        # Opacity (More Opaque = More humid)
+                        output = max(min(output, 1.0), 0.1)  # Clamp values for opacity
                         data_str = json.dumps({"material": {"opacity": output}})
                         map_cube.update(data=data_str)
+
+                        # Color (Blue for Moist, Green for Dry)
+                        b_value = output * 255
+                        g_value = 255 - b_value
+                        map_cube.update(color=(0, g_value, b_value))
+
+                        # Size Update (Larger = More moist)
+                        size_output = 1.0 + output
+                        size_output = max(min(size_output, 1.5), 1.0)
+                        map_cube.update(scale=(size_output, size_output, size_output))
 
         time.sleep(0.1)
 
@@ -107,7 +133,7 @@ def stove_button_callback(event):
             stove_light.update(color = (100,0,0))
             stove_cube.update(data='{"material": {"opacity": 0.80}}')
             stove_cube.update(data='{"animation": { "property": "scale", "to": "3 3 3", "loop": true, "dur": 1000}}')
-            send_alert()
+            # send_alert() # Comment this out when testing so you don't get spammed by emails
 
 stove_obj = arena.Object(
         objName = "stove",
@@ -275,10 +301,10 @@ button_cube_wireless= arena.Object(
 )
 
 # Only for the first floor
-heatmap_cube_pos_list = [(-7,2,-2.5), (-5,2,-2.5), (-3,2,-2.5), # Missing (-9,2,-2.5) since it blocks the doorway
-                         (-9,2,-4.5), (-7,2,-4.5), (-5,2,-4.5), (-3,2,-4.5),
-                         (-9,2,-6.5), (-7,2,-6.5), (-5,2,-6.5), (-3,2,-6.5),
-                         (-9,2,-8.5), (-7,2,-8.5), (-5,2,-8.5), (-3,2,-8.5)]
+heatmap_cube_pos_list = [(-7,1.6,-2.5), (-5,1.6,-2.5), (-3,1.6,-2.5), # Missing (-9,1.6,-2.5) since it blocks the doorway
+                         (-9,1.6,-4.5), (-7,1.6,-4.5), (-5,1.6,-4.5), (-3,1.6,-4.5),
+                         (-9,1.6,-6.5), (-7,1.6,-6.5), (-5,1.6,-6.5), (-3,1.6,-6.5),
+                         (-9,1.6,-8.5), (-7,1.6,-8.5), (-5,1.6,-8.5), (-3,1.6,-8.5)]
 
 # Initialize all first floor cubes in the space
 first_floor_heatmap_cube_list = []
