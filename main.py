@@ -101,7 +101,6 @@ def stove_button_callback(event):
         else:
             stove_status = True
             stove_light.update(color = (100 ,0, 0))
-
 stove_obj = arena.Object(
         objName = "stove",
         url="store/users/patrickhan/m202a/stove.glb",
@@ -112,7 +111,6 @@ stove_obj = arena.Object(
         callback=stove_button_callback,
         clickable=True,
 )
-
 stove_cube = arena.Object(
         objName = "cube_stove",
         objType = arena.Shape.cube,
@@ -122,7 +120,6 @@ stove_cube = arena.Object(
         color = (255,0,255),
         data='{"material": {"opacity": 0.5}}'
 )
-
 stove_light = arena.Object(
         objName = "light_stove",
         objType = arena.Shape.light,
@@ -131,7 +128,15 @@ stove_light = arena.Object(
         color = (0 ,0, 0),
         data='{"light": {"type": "point"}}'
 )
-
+stove_text = arena.Object(
+        objName = "stove_text",
+        objType = arena.Shape.text,
+        color = (255,0,255),
+        location= (-11.32, 2.6,-10.0),
+        scale = (0.7, 0.7, 0.7),
+        rotation=(0, 0.7071068, 0, 0.7071068), # Quaternions
+        text = "Gas Stove Sensor"
+)
 
 
 '''
@@ -203,6 +208,35 @@ reading_text = arena.Object(
         location= (-1.3,3.2,-7.4),
         rotation=(0, 0.7071068, 0, -0.7071068), # Quaternions
         text = "Hello World!"
+)
+
+
+temperature_button_text = arena.Object(
+        objName = "temperature_button_text",
+        objType = arena.Shape.text,
+        color = (255,0,0),
+        location= (-1.3,2.6,-8),
+        scale = (0.3, 0.3, 0.3),
+        rotation=(0, 0.7071068, 0, -0.7071068), # Quaternions
+        text = "Temperature"
+)
+humidity_button_text = arena.Object(
+        objName = "humidity_button_text",
+        objType = arena.Shape.text,
+        color = (0,255,0),
+        location= (-1.3,2.6,-7.5),
+        scale = (0.3, 0.3, 0.3),
+        rotation=(0, 0.7071068, 0, -0.7071068), # Quaternions
+        text = "Humidity"
+)
+wireless_button_text = arena.Object(
+        objName = "wireless_button_text",
+        objType = arena.Shape.text,
+        color = (0,0,255),
+        location= (-1.3,2.6,-7),
+        scale = (0.3, 0.3, 0.3),
+        rotation=(0, 0.7071068, 0, -0.7071068), # Quaternions
+        text = "Wireless"
 )
 
 
