@@ -4,9 +4,10 @@ import json
 import random
 import arena
 from threading import Thread
-from sense import distance_3d
+from utils import distance_3d
+from utils import send_alert
 
-
+send_alert()
 # Global for keeping track of which sensor to display data from
 sensor_to_read = "temperature"
 # Heat map cubes, default color is green for now, green for humidity
