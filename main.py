@@ -7,7 +7,6 @@ from threading import Thread
 from utils import distance_3d
 from utils import send_alert
 
-send_alert()
 # Global for keeping track of which sensor to display data from
 sensor_to_read = "temperature"
 # Heat map cubes, default color is green for now, green for humidity
@@ -93,15 +92,23 @@ Turns the stove on and off
 '''
 stove_status = False
 def stove_button_callback(event):
-    global stove_light
     global stove_status
+    global stove_cube
+    global stove_light
+    global stove_text
     if event.event_type == arena.EventType.mousedown:
         if stove_status:
             stove_status = False
-            stove_light.update(color = (0 ,0, 0))
+            stove_light.update(color = (0,0,0))
+            stove_cube.update(data='{"material": {"opacity": 0.25}}')
+            stove_cube.update(data='{"animation": { "property": "scale", "to": "1 1 1", "loop": false, "dur": 0}}')
         else:
             stove_status = True
-            stove_light.update(color = (100 ,0, 0))
+            stove_light.update(color = (100,0,0))
+            stove_cube.update(data='{"material": {"opacity": 0.80}}')
+            stove_cube.update(data='{"animation": { "property": "scale", "to": "3 3 3", "loop": true, "dur": 1000}}')
+            send_alert()
+
 stove_obj = arena.Object(
         objName = "stove",
         url="store/users/patrickhan/m202a/stove.glb",
@@ -116,10 +123,9 @@ stove_cube = arena.Object(
         objName = "cube_stove",
         objType = arena.Shape.cube,
         location= (-10.7,2,-10.0),
-        clickable= True,
         scale = (0.8,0.8,0.8),
         color = (255,0,255),
-        data='{"material": {"opacity": 0.5}}'
+        data='{"material": {"opacity": 0.25}}'
 )
 stove_light = arena.Object(
         objName = "light_stove",
@@ -165,7 +171,6 @@ fan_obj = arena.Object(
         clickable=True,
         data='{"animation": { "property": "rotation", "to": "0 360 0", "loop": false, "dur": 0}}',
 )
-
 button_fan = arena.Object(
         objName = "button_fan",
         objType = arena.Shape.cube,
@@ -211,7 +216,6 @@ reading_text = arena.Object(
         text = "Hello World!"
 )
 
-
 temperature_button_text = arena.Object(
         objName = "temperature_button_text",
         objType = arena.Shape.text,
@@ -251,7 +255,6 @@ button_cube_temperature = arena.Object(
         callback = button_callback,
         color = (0,0,0)
 )
-
 button_cube_humidity = arena.Object(
         objName = "button_cube_humidity",
         objType = arena.Shape.cube,
@@ -261,7 +264,6 @@ button_cube_humidity = arena.Object(
         callback = button_callback,
         color = (255, 255, 255)
 )
-
 button_cube_wireless= arena.Object(
         objName = "button_cube_wireless",
         objType = arena.Shape.cube,
@@ -271,9 +273,6 @@ button_cube_wireless= arena.Object(
         callback = button_callback,
         color = (155, 155, 155)
 )
-
-
-
 
 # Only for the first floor
 heatmap_cube_pos_list = [(-7,2,-2.5), (-5,2,-2.5), (-3,2,-2.5), # Missing (-9,2,-2.5) since it blocks the doorway
