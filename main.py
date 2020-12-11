@@ -133,7 +133,7 @@ def stove_button_callback(event):
             stove_light.update(color = (100,0,0))
             stove_cube.update(data='{"material": {"opacity": 0.80}}')
             stove_cube.update(data='{"animation": { "property": "scale", "to": "3 3 3", "loop": true, "dur": 1000}}')
-            # send_alert() # Comment this out when testing so you don't get spammed by emails
+            send_alert() # Comment this out when testing so you don't get spammed by emails
 
 stove_obj = arena.Object(
         objName = "stove",
